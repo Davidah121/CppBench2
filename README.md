@@ -12,6 +12,32 @@ void __cyg_profile_func_exit(void *func, void *callsite);
 If you need to use _penter and _pexit instead, you must add an implementation for those directly and retrieve the correct start address.
 
 # Usage
+By default, all functions in a file compiled with -finstument-functions will be profiled. In order to avoid this, either add the appropriate attribute, i.e. 
+[[no_instument_function]], or just compile the file without that flag which will include all functions in that file.
+
+Upon running an application compiled with CppBench2, a folder will be created with the results with each thread getting its own file.
+
+For easy processing of that information, code is included that will process the information however, the file structure is very simple so it is not necessary. The structure is as follows:
+```C
+struct FunctionEnterInfo
+{
+    size_t functionID;
+    size_t startTime;
+};
+
+struct FunctionExitInfo
+{
+    size_t endTime;
+};
+```
+From here, it shows that the space required is 26 bytes per function since an identifier is needed to specify if its entering or exiting. Stack ID can be solved later and does not need to be recorded.
+
+Lastly, and most importantly, the functionID is an offset from a known function. In this case, __cyg_profile_func_enter. This results in simpler post processing. A list of functions and their offsets in the .text section of the programs code is all that is needed. Due to this, nm or llvm-nm is needed. Windows objdump can also be used.
+
+The provided processor for the benchmark trace files uses llvm-nm in a non portable way currently.
+
+
+Dtack
 For each type, a serialization and deserialization function must be defined otherwise a default approach will be used.
 The default approach is just to write out the raw values in memory which may work fine for many data types.
 
