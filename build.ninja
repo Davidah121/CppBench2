@@ -1,0 +1,22 @@
+## for getting object files
+## This also gets dependencies
+rule BuildUtilities
+   deps = gcc
+   depfile = $out.d
+   command = clang++ -std=c++17 -c -g -O2 $in -o $out -MD -MF $out.d
+
+rule BuildEverythingElse
+   deps = gcc
+   depfile = $out.d
+   command = clang++ -std=c++17 -finstrument-functions -c -g -O2 $in -o $out -MD -MF $out.d
+
+rule Assemble
+   deps = gcc
+   depfile = $out.d
+   command = clang++ -std=c++17 $in -o $out -MD -MF $out.d
+
+## build all of the objects and the executable
+build CppBench2Util.o: BuildUtilities CppBench2Util.cpp
+build IOTools.o: BuildUtilities IOTools.cpp
+build test.o: BuildEverythingElse test.cpp
+build output.exe: Assemble test.o CppBench2Util.o IOTools.o
